@@ -1,38 +1,27 @@
-// TODO: Include packages needed for this application
+// Packages required for this script
 const inquirer = require('inquirer');
 const fs = require('fs');
+const gM = require('./utils/generateMarkdown.js');
 const { url } = require('inspector');
+const generateMarkdown = require('./utils/generateMarkdown.js');
 
-const licensesURL = 'https://api.github.com/licenses'
-const licenseArray = [
-    'GNU Affero General Public License v3.0',
-    'Apache License 2.0', 
-    'BSD 2-Clause "Simplified" License', 
-    'BSD 3-Clause "New" License',
-    'Boost Software License 1.0', 
-    'Creative Commons Zero v1.0 Universal',
-    'Eclipse Public License 2.0',
-    'GNU General Public License v2.0',
-    'GNU General Public License v3.0',
-    'GNU Lesser General Public License v2.1',
-    'MIT License',
-    'Mozilla Public License 2.0',
-    'The Unlicense'
-];
+const licensesURL = 'https://api.github.com/licenses';
 
+function fetchGitHubLicenses(url) {
+    fetch(url).then(function(response) {
+        return response.json()
+    }).then(function(data){
+        // console.log(data)
+        const licensesList = [];
+        for (const i in data) {
+            licensesList.push(data[i].spdx_id);
+        }
+        questions(licensesList,data)
+    });
+}
 
-// fetch(licensesURL).then(function(response) {
-//     return response.json()
-// }).then(function(data){
-//     // console.log(data)
-//     for (let i in data) {
-//         console.log(data[i].name);
-//     }
-// });
-
-
-// TODO: Create an array of questions for user input
-const questions = () => {
+// uses inquirer to create a series of questions for the user to respond to in the terminal
+function questions(licensesList,licensesObject) {
     inquirer
         .prompt([
             {
@@ -68,7 +57,7 @@ const questions = () => {
             {
                 type: 'list',
                 message: 'Which license would you like to use?',
-                choices: licenseArray,
+                choices: licensesList,
                 name: 'license'
             },
             {
@@ -83,43 +72,84 @@ const questions = () => {
             }
         ]).then((answers) => {
             console.log(answers);
-            for (a in answers) {
-                let userInput = JSON.stringify(answers[a]);
-                writeToFile('README.md', userInput);
-            }
+            // pass 'README.md' as the file name to be created
+            // pass the answers object to the next function to be used in file creation
+            writeToFile('README.md', answers);
+        });
+};
 
-        })
-}
-// TODO: Create a function to write README file
-function writeToFile(fileName, data) {
-    const tableOfContents = [
-        '# Table of Contents\n',
-        '- [Description](#description)',
-        '- [Installation](#installation)',
-        '- [Usage](#usage)',
-        '- [Contributing](#contributing)',
-        '- [Tests](#tests)',
-        '- [Questions](#questions)'
-    ];
 
-    const sections = [
-        '## Description\n', 
-        '## Installation\n', 
-        '## Usage\n', 
-        '## Contributing', 
-        '## Tests\n',
-        '## Questions'
-    ];
-    
-    // fs.appendFile(fileName, data, (error) => {
-    //     error ? console.error(error) : console.log(`${data} appended successfully`);
-    // });
-}
+function writeToFile(fileName, answers) {
+    // calls function to generate markdown title
+    // passes fileName, answers object obtained in questions(), and the object containing all license information from api call
+    generateTitle(fileName, answers);    
+};
 
-// TODO: Create a function to initialize app
+
+function generateTitle (fileName, answers) {
+    fs.appendFile(fileName, `# ${answers.title}\n`, (error) => {
+        error ? console.error(error) : console.log('Title added successfully')
+    });
+
+    generateTableOfContents(fileName, answers);
+};
+
+
+function generateTableOfContents (fileName, answers) {    
+    const tableOfContents =
+        '## Table of Contents\n - [Description](#description)\n - [Installation](#installation)\n - [Usage](#usage)\n - [Contributing](#contributing)\n - [Tests](#tests)\n - [Questions](#questions)\n';
+    fs.appendFile(fileName, tableOfContents, (error) => {
+        error ? console.error(error) : console.log('Table of contents added successfully')
+    });
+generateSections(fileName, answers);
+};
+
+
+function generateSections(fileName, answers) {
+    // write description
+    fs.appendFile(fileName, `## Description\n${answers.description}\n` , (error) => {
+        error ? console.error(error) : console.log('description added')
+    });
+
+    // write license and generate badge
+    if (answers.license) {
+        fs.appendFile(fileName, `[![license badge](https://img.shields.io/badge/license-${answers.license}-green?style=for-the-badge)]\n`, (error) => {
+            error ? console.error(error) : console.log('license badge added')
+        });
+    };
+
+    // write installation
+    fs.appendFile(fileName, `## Installation\n${answers.installation}\n`, (error) => {
+        error ? console.error(error) : console.log('installation added')
+    });
+
+    // write usage
+    fs.appendFile(fileName, `## Usage\n${answers.usage}\n`, (error) => {
+        error ? console.error(error) : console.log('usage added')
+    });
+
+    // write contributing
+    fs.appendFile(fileName, `## Contributing\n${answers.contributing}\n`, (error) => {
+        error ? console.error(error) : console.log('contributing added')
+    });
+
+    // write tests
+    fs.appendFile(fileName, `## Tests\n${answers.tests}\n`, (error) => {
+        error ? console.error(error) : console.log('tests added')
+    });
+
+    // write github
+    fs.appendFile(fileName, `## Questions\nhttps://github.com/${answers.userName}\n${answers.email}\n`, (error) => {
+        error ? console.error(error) : console.log('github added')
+    });
+
+};
+
+
+// Create a function to initialize app
 function init() {
-    questions();
+    fetchGitHubLicenses(licensesURL);
 }
 
-// Function call to initialize app
+// call init
 init();
