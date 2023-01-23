@@ -1,9 +1,7 @@
 // Packages required for this script
 const inquirer = require('inquirer');
 const fs = require('fs');
-const gM = require('./utils/generateMarkdown.js');
 const { url } = require('inspector');
-const generateMarkdown = require('./utils/generateMarkdown.js');
 
 const licensesURL = 'https://api.github.com/licenses';
 
@@ -109,43 +107,6 @@ function generateSections(fileName, answers) {
     fs.appendFile(fileName, `\n![license badge](https://img.shields.io/badge/license-${answers.license}-green?style=for-the-badge)\n\n## Description\n${answers.description}\n\n## Installation\n${answers.installation}\n\n## Usage\n${answers.usage}\n\n## Contributing\n${answers.contributing}\n\n## Tests\n${answers.tests}\n\n## Questions\nhttps://github.com/${answers.userName}\n\n${answers.email}\n`, (error) => {
         error ? console.error(error) : console.log('content added')
     });
-
-    // write description
-    // fs.appendFile(fileName, `## Description\n${answers.description}\n` , (error) => {
-    //     error ? console.error(error) : console.log('description added')
-    // });
-
-    // write license and generate badge
-    // if (answers.license) {
-    //     fs.appendFile(fileName, `![license badge](https://img.shields.io/badge/license-${answers.license}-green?style=for-the-badge)\n`, (error) => {
-    //         error ? console.error(error) : console.log('license badge added')
-    //     });
-    // };
-
-    // write installation
-    // fs.appendFile(fileName, `## Installation\n${answers.installation}\n`, (error) => {
-    //     error ? console.error(error) : console.log('installation added')
-    // });
-
-    // write usage
-    // fs.appendFile(fileName, `## Usage\n${answers.usage}\n`, (error) => {
-    //     error ? console.error(error) : console.log('usage added')
-    // });
-
-    // write contributing
-    // fs.appendFile(fileName, `## Contributing\n${answers.contributing}\n`, (error) => {
-    //     error ? console.error(error) : console.log('contributing added')
-    // });
-
-    // write tests
-    // fs.appendFile(fileName, `## Tests\n${answers.tests}\n`, (error) => {
-    //     error ? console.error(error) : console.log('tests added')
-    // });
-
-    // write github
-    // fs.appendFile(fileName, `## Questions\nhttps://github.com/${answers.userName}\n${answers.email}\n`, (error) => {
-    //     error ? console.error(error) : console.log('github added')
-    // });
 
 };
 
